@@ -1,1 +1,15 @@
-
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/virtuGather?serverTimezone=UTC&useSSL=false&characterEncoding=utf-8
+    username: root
+    password: admin
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 20
+      idle-timeout: 30000 # Maximum amount of time (in milliseconds) that a connection can sit idle in the pool
+      max-lifetime: 2000000 # Maximum lifetime of a connection in the pool
+      connection-timeout: 30000 # Maximum number of milliseconds to wait for a connection from the pool
+      pool-name: VirtuGatherHikariCP # Custom pool name for easier identification in monitoring
+logging:
+  level:
+    root: INFO
