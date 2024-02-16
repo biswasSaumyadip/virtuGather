@@ -1,5 +1,6 @@
 package com.event.virtugather.dao.Impl;
 
+import com.event.virtugather.constants.SQL.DatabaseQueries;
 import com.event.virtugather.constants.UserField;
 import com.event.virtugather.dao.UserDao;
 import com.event.virtugather.model.User;
@@ -25,12 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserDaoImplementation implements UserDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserDaoImplementation.class);
-    private static final String QUERY_CREATE_USER = "INSERT INTO users(username, email, password) VALUES (?,?,?)";
-    private static final String QUERY_GET_USER = "SELECT user_id, username, password, email, created_at, updated_at FROM users WHERE user_id = ?";
-    private static final String QUERY_CHECK_USERNAME = "SELECT COUNT(1) FROM users WHERE username = ?";
-    private static final String QUERY_GET_USER_BY_USERNAME_PASSWORD = "SELECT user_id, username, password, email, created_at, updated_at FROM users WHERE username = ? AND password = ?";
-    private static final String QUERY_UPDATE_USER = "UPDATE users SET username = ?, email = ?, password = ? WHERE user_id = ?";
-    private static final String QUERY_DELETE_USER = "DELETE FROM users WHERE user_id = ?";
+
     private static final String USER_CREATION_SUCCESSFUL = "User creation successful";
     private static final String USER_UPDATE_SUCCESSFUL = "User update successful";
     private static final String USER_DELETION_SUCCESSFUL = "User deletion successful";
@@ -72,7 +68,7 @@ public class UserDaoImplementation implements UserDao {
             throw new IllegalArgumentException("User ID cannot be null");
         }
         try {
-            int rows = jdbcTemplate.update(QUERY_DELETE_USER, id);
+            int rows = jdbcTemplate.update(DatabaseQueries.QUERY_DELETE_USER, id);
             LOGGER.info(USER_DELETION_SUCCESSFUL);
             return rows;
         } catch (DataAccessException exception) {
@@ -88,7 +84,7 @@ public class UserDaoImplementation implements UserDao {
         }
 
         try {
-            return Optional.ofNullable(jdbcTemplate.query(QUERY_GET_USER, this::buildUserFromResultSet, id));
+            return Optional.ofNullable(jdbcTemplate.query(DatabaseQueries.QUERY_GET_USER, this::buildUserFromResultSet, id));
         } catch (Exception exception) {
             LOGGER.error("Unable to fetch user data, due to - {}", exception.getLocalizedMessage());
             return Optional.empty();
@@ -104,7 +100,7 @@ public class UserDaoImplementation implements UserDao {
         try {
             return Optional.ofNullable(
                     jdbcTemplate.query(
-                            QUERY_GET_USER_BY_USERNAME_PASSWORD,
+                            DatabaseQueries.QUERY_GET_USER_BY_USERNAME_PASSWORD,
                             this::buildUserFromResultSet,
                             username,
                             password)
@@ -119,7 +115,7 @@ public class UserDaoImplementation implements UserDao {
     @Override
     public boolean isUsernameExist(String username) {
         try {
-            Integer count = jdbcTemplate.queryForObject(QUERY_CHECK_USERNAME, Integer.class, username);
+            Integer count = jdbcTemplate.queryForObject(DatabaseQueries.QUERY_CHECK_USERNAME, Integer.class, username);
             return count != null && count > 0;
         } catch (EmptyResultDataAccessException e) {
             return false;
@@ -154,7 +150,7 @@ public class UserDaoImplementation implements UserDao {
     }
 
     private PreparedStatementCreator setParametersForCreateUser(User user) {
-        return getPreparedStatementCreator(user, QUERY_CREATE_USER);
+        return getPreparedStatementCreator(user, DatabaseQueries.QUERY_CREATE_USER);
     }
 
     private PreparedStatementCreator getPreparedStatementCreator(User user, String queryCreateUser) {
@@ -169,7 +165,7 @@ public class UserDaoImplementation implements UserDao {
     }
 
     private PreparedStatementCreator setParametersForUpdateUser(User user) {
-        return getPreparedStatementCreator(user, QUERY_UPDATE_USER);
+        return getPreparedStatementCreator(user, DatabaseQueries.QUERY_UPDATE_USER);
     }
 
     private User buildUserFromResultSet(ResultSet rs) throws SQLException {
