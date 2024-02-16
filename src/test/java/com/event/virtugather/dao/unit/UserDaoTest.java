@@ -1,16 +1,19 @@
 package com.event.virtugather.dao.unit;
 
+import com.event.virtugather.constants.SQL.DatabaseQueries;
 import com.event.virtugather.constants.UserField;
 import com.event.virtugather.dao.Impl.UserDaoImplementation;
 import com.event.virtugather.model.User;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,6 +22,7 @@ import org.springframework.dao.UncategorizedDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
@@ -37,6 +41,10 @@ public class UserDaoTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
+
+
+    @Captor
+    private ArgumentCaptor<PreparedStatementCreator> preparedStatementCaptor;
 
     @InjectMocks
     private UserDaoImplementation userDao; //mock objects will be injected in @injectMocks
@@ -166,8 +174,6 @@ public class UserDaoTest {
     @Test
     @DisplayName("Test for Fetching User by ID")
     void getUserBy_UUID_ShouldReturnUser() {
-        String sql = "SELECT user_id, username, password, email, created_at, updated_at FROM " +
-                "users WHERE user_id = ?";
 
         Long id = 1L;
         User user = User.builder()
@@ -178,7 +184,7 @@ public class UserDaoTest {
                 .build();
 
 
-        when(jdbcTemplate.query(eq(sql), any(ResultSetExtractor.class), eq(id)))
+        when(jdbcTemplate.query(eq(DatabaseQueries.QUERY_GET_USER), any(ResultSetExtractor.class), eq(id)))
                 .thenAnswer(invocation -> {
                     ResultSetExtractor<User> extractor = invocation.getArgument(1);
                     // Simulate ResultSet behavior here
@@ -203,12 +209,9 @@ public class UserDaoTest {
     @Test
     @DisplayName("Test for Fetching User by Non-existent ID")
     void  getUserBy_NonExistentId_ShouldReturnEmptyOptional(){
-        String sql = "SELECT user_id, username, password, email, created_at, updated_at FROM " +
-                "users WHERE user_id = ?";
-
         Long id = 1L;
 
-        when(jdbcTemplate.query(eq(sql), any(ResultSetExtractor.class), eq(id)))
+        when(jdbcTemplate.query(eq(DatabaseQueries.QUERY_GET_USER), any(ResultSetExtractor.class), eq(id)))
                 .thenAnswer(invocationOnMock -> null);
 
         Optional<User> result = userDao.getUserBy(id);
@@ -220,12 +223,11 @@ public class UserDaoTest {
     @Test
     @DisplayName("Test for Handling Database Error on Fetch User by ID")
     void getUserBy_DatabaseError_ShouldHandleGracefully() {
-        String sql = "SELECT user_id, username, password, email, created_at, updated_at FROM users WHERE user_id = ?";
 
         Long id = 1L;
 
         // Mock jdbcTemplate to throw a DataAccessException when the query method is called
-        when(jdbcTemplate.query(eq(sql), any(ResultSetExtractor.class), eq(id)))
+        when(jdbcTemplate.query(eq(DatabaseQueries.QUERY_GET_USER), any(ResultSetExtractor.class), eq(id)))
                 .thenThrow(new DataAccessException("Database error") {
                 });
 
@@ -234,7 +236,7 @@ public class UserDaoTest {
 
         // Then
         assertTrue(result.isEmpty(), "Expect an empty result for database error");
-        verify(jdbcTemplate).query(eq(sql), any(ResultSetExtractor.class), eq(id));
+        verify(jdbcTemplate).query(eq(DatabaseQueries.QUERY_GET_USER), any(ResultSetExtractor.class), eq(id));
     }
 
 
@@ -242,7 +244,6 @@ public class UserDaoTest {
     @DisplayName("Test for Handling Null ID on Fetch User by ID")
     void getUserBy_NullId_ShouldHandleGracefullyTest() {
         // Given
-        String sql = "SELECT user_id, username, password, email, created_at, updated_at FROM users WHERE user_id = ?";
 
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userDao.getUserBy(null),
@@ -250,12 +251,12 @@ public class UserDaoTest {
 
         // Then
         assertEquals("User ID cannot be null", exception.getMessage());
-        verify(jdbcTemplate, times(0)).query(eq(sql), any(ResultSetExtractor.class), eq(null));
+        verify(jdbcTemplate, times(0)).query(eq(DatabaseQueries.QUERY_GET_USER), any(ResultSetExtractor.class), eq(null));
     }
 
     @Test
     @DisplayName("Test for Updating User")
-    public void updateUser_NormalCase_Success()  {
+    public void updateUser_NormalCase_Success() {
         // Arrange
        User user = User.builder()
                 .user_id(100L)
@@ -271,6 +272,8 @@ public class UserDaoTest {
 
         // Assert
         assertEquals(1, result);
+
+        verify(jdbcTemplate).update(preparedStatementCaptor.capture());
     }
 
     @Test
@@ -416,35 +419,52 @@ public class UserDaoTest {
     }
 
     @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
     public void testUpdateUsernameField() {
-        testUpdateUserField(UserField.USERNAME, "new-username");
+        testUpdateUserField(UserField.USERNAME, "new-username", "new-username");
     }
 
     @Test
     public void testUpdateEmailField() {
-        testUpdateUserField(UserField.EMAIL, "new-email@example.com");
+        testUpdateUserField(UserField.EMAIL, "new-email@example.com", "new-email@example.com");
     }
 
     @Test
     public void testUpdatePasswordField() {
-        testUpdateUserField(UserField.PASSWORD, "new-secret-password");
+        testUpdateUserField(UserField.PASSWORD, "new-secret-password", "new-secret-password");
     }
 
     @Test
     public void testUpdateNonexistentUserField() {
-        when(userDao.updateUserField(Mockito.anyLong(), Mockito.any(), Mockito.anyString())).thenReturn(0);
+
+        String sql = "UPDATE user SET " + UserField.USERNAME.name().toLowerCase() + " = :newValue WHERE user_id = :userId";
+
+
+        when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class))).thenReturn(0);
+
         int result = userDao.updateUserField(9999L, UserField.USERNAME, "new-username");
 
-        Mockito.verify(userDao, Mockito.times(1)).updateUserField(any(Long.class), any(UserField.class), any(String.class));
-        Assertions.assertEquals(0, result, "Updating field of non-existent user should return 0");
+        ArgumentCaptor<MapSqlParameterSource> captor = ArgumentCaptor.forClass(MapSqlParameterSource.class);
+        verify(jdbcTemplate, times(1)).update(eq(sql), captor.capture());
+        assertEquals(0, result, "Updating field of non-existent user should return 0");
     }
 
-    private void testUpdateUserField(UserField userField, String newValue) {
-        when(userDao.updateUserField(anyLong(), any(), anyString())).thenReturn(1);
+    private <T> void  testUpdateUserField(UserField userField, String newValue, T expected) {
+        long id = 1L;
+        String sql = "UPDATE user SET " + userField.name().toLowerCase() + " = :newValue WHERE user_id = :userId";
 
-        int result = userDao.updateUserField(1L, userField, newValue);
+        when(jdbcTemplate.update(eq(sql), any(MapSqlParameterSource.class))).thenReturn(1);
 
-        Mockito.verify(userDao, Mockito.times(1)).updateUserField(any(Long.class), any(UserField.class), any(String.class));
-        Assertions.assertTrue(result > 0, "User field update failed");
+        int result = userDao.updateUserField(id, userField, newValue);
+
+        ArgumentCaptor<MapSqlParameterSource> captor = ArgumentCaptor.forClass(MapSqlParameterSource.class);
+        verify(jdbcTemplate, times(1)).update(eq(sql), captor.capture());
+
+        assertTrue(result > 0, "User field update failed");
+
+        // Assert the captured SqlParameterSource meets our requirement.
+        MapSqlParameterSource capturedMap = captor.getValue();
+        assertEquals(expected, capturedMap.getValue("newValue"));
+        assertEquals(1L, capturedMap.getValue("userId")); // Change this to use the appropriate getter in your actual code
     }
 }
