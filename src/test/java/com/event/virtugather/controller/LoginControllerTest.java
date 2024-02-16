@@ -3,22 +3,24 @@ package com.event.virtugather.controller;
 import com.event.virtugather.DTO.UserDTO;
 import com.event.virtugather.model.User;
 import com.event.virtugather.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest(controllers = LoginController.class)
@@ -39,8 +41,7 @@ public class LoginControllerTest {
     @Test
     public void testRegister() throws Exception {
         UserDTO userDTO = new UserDTO();
-        User user = userDTO.toUser();
-        Mockito.when(userService.createUser(any(User.class))).thenReturn(1);
+        when(userService.createUser(any(User.class))).thenReturn(1);
 
         mockMvc.perform(post("/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -54,16 +55,29 @@ public class LoginControllerTest {
 
     @Test
     public void testRegisterWithNullUser() throws Exception {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            mockMvc.perform(post("/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(null)))
-                    .andExpect(status().isBadRequest());
-        });
-
-        String expectedMessage = NULL_USER_MSG;
-        String actualMessage = exception.getMessage();
-
-        assertThat(expectedMessage).isEqualTo(actualMessage);
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
+                .andExpect(result -> assertEquals("Required request body is missing: public java.lang.String com.event.virtugather.controller.LoginController.register(com.event.virtugather.DTO.UserDTO)",
+                        result.getResolvedException().getMessage()));
     }
+
+    @Test
+    void checkUsernameTest() throws Exception {
+        String username = "testusername";
+
+        // Given
+        given(userService.isUsernameExist(username)).willReturn(true);
+
+        // When & Then
+        mockMvc.perform(get("/checkUsername/" + username)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Verify interactions
+        verify(userService).isUsernameExist(username);
+    }
+
 }
