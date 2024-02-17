@@ -38,5 +38,11 @@ public class LoginController {
         return userService.updatedUserField(id, field, newValue);
     }
 
+    @GetMapping("/checkEmail/{email}")
+    public boolean checkEmail(@PathVariable String email) {
+        log.info("Checking if email exists: {}", email);
+        return userService.isEmailExist(email);
+    }
+
 
 }

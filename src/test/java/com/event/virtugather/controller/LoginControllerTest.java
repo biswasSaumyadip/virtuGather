@@ -13,13 +13,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -150,6 +152,30 @@ public class LoginControllerTest {
 
         // Verify
         verify(userService).updatedUserField(id, field, newValue);
+    }
+
+    @Test
+    @DisplayName("When Email Does not exist, return false")
+    public void checkEmailDoesNotExist() throws Exception {
+        String email = "email@domain.com";
+        when(userService.isEmailExist(email)).thenReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/checkEmail/{email}", email))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+    }
+
+    @Test
+    @DisplayName("When Email Exists, return true")
+    public void checkEmailExists() throws Exception {
+        String email = "existingEmail@domain.com";
+        when(userService.isEmailExist(email)).thenReturn(true);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/checkEmail/{email}", email))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
     }
 
 }
