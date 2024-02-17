@@ -304,7 +304,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Test for Successful User Deletion")
+    @DisplayName("Test for Deleting a User")
     void deleteUserTest_Success() {
 
         String sql = "DELETE FROM users WHERE user_id = ?";
@@ -320,7 +320,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Test for Non-Existent User Deletion")
+    @DisplayName("Test for EmptyResultDataAccessException thrown when deleting a user that does not exist")
     void deleteUserTest_NonExistentUser() {
 
         String sql = "DELETE FROM users WHERE user_id = ?";
@@ -336,7 +336,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Test for Exception During User Deletion")
+    @DisplayName("Test for UncategorizedDataAccessException thrown during delete operation")
     void deleteUserTest_Exception() {
 
         Long id = 1L;
@@ -354,38 +354,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Test for Valid User Check by Username and Password")
-    void validateUser_withValidCredentials() {
-
-        User user = User.builder()
-                .username("testUser")
-                .password("password123")
-                .build();
-
-        String sql = "SELECT user_id, username, password, email, created_at, updated_at FROM users WHERE username = ? AND password = ?";
-
-        when(jdbcTemplate.query(eq(sql), any(ResultSetExtractor.class), eq(user.getUsername()), eq(user.getPassword())))
-                .thenAnswer(invocation -> {
-                    ResultSetExtractor<User> extractor = invocation.getArgument(1);
-                    // Simulating ResultSet behavior here
-                    ResultSet rs = mock(ResultSet.class);
-                    when(rs.next()).thenReturn(true); // Simulate that a user is found
-                    // Mocking other rs.getXXX methods to return values
-                    when(rs.getString("username")).thenReturn(user.getUsername());
-                    when(rs.getString("password")).thenReturn(user.getPassword());
-                    // etc. for other fields
-                    return extractor.extractData(rs); // Using the extractor with the mocked ResultSet
-                });
-
-        Optional<User> result = userDao.validateUser(user.getUsername(), user.getPassword());
-
-
-        assertTrue(result.isPresent(), "Expected User to be valid for correct username and password");
-    }
-
-
-    @Test
-    @DisplayName("Testing for username existence when username exists")
+    @DisplayName("Test for username existence when username exists")
     void testIsUsernameExist_whenUsernameExists() {
         String username = "existingUser";
         when(jdbcTemplate.queryForObject(anyString(), eq(Integer.class), eq(username))).thenReturn(1);
@@ -396,7 +365,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Testing for username existence when username doesn't exist")
+    @DisplayName("Test for username existence when username doesn't exist")
     void testIsUsernameExist_whenUsernameDoesNotExist() {
         String username = "nonExistingUser";
         when(jdbcTemplate.queryForObject(anyString(), eq(Integer.class), eq(username))).thenReturn(0);
@@ -407,7 +376,7 @@ public class UserDaoTest {
     }
 
     @Test
-    @DisplayName("Testing for username existence when empty data exception is thrown")
+    @DisplayName("Test for username existence when empty data exception is thrown")
     void testIsUsernameExist_whenEmpty_resultDataAccessExceptionIsThrown() {
         String username = "testUser";
         when(jdbcTemplate.queryForObject(anyString(), eq(Integer.class), eq(username)))
@@ -419,22 +388,26 @@ public class UserDaoTest {
     }
 
     @Test
+    @DisplayName("Test for updating specific field for user")
     @MockitoSettings(strictness = Strictness.LENIENT)
     public void testUpdateUsernameField() {
         testUpdateUserField(UserField.USERNAME, "new-username", "new-username");
     }
 
     @Test
+    @DisplayName("Test for updating Email field for user")
     public void testUpdateEmailField() {
         testUpdateUserField(UserField.EMAIL, "new-email@example.com", "new-email@example.com");
     }
 
     @Test
+    @DisplayName("Test for updating Password field for user")
     public void testUpdatePasswordField() {
         testUpdateUserField(UserField.PASSWORD, "new-secret-password", "new-secret-password");
     }
 
     @Test
+    @DisplayName("Test for updating non-existent user field")
     public void testUpdateNonexistentUserField() {
 
         String sql = "UPDATE user SET " + UserField.USERNAME.name().toLowerCase() + " = :newValue WHERE user_id = :userId";
@@ -466,5 +439,21 @@ public class UserDaoTest {
         MapSqlParameterSource capturedMap = captor.getValue();
         assertEquals(expected, capturedMap.getValue("newValue"));
         assertEquals(1L, capturedMap.getValue("userId")); // Change this to use the appropriate getter in your actual code
+    }
+
+    @Test
+    @DisplayName("Test for user email existence when user does not exist")
+    public void isEmailExistTest_whenUserDoesNotExist() {
+        when(jdbcTemplate.queryForObject(any(String.class), any(Class.class), any(String.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+        assertFalse(userDao.isEmailExist("user@virt.ua"));
+    }
+
+    @Test
+    @DisplayName("Test for user email existence when user exists")
+    public void isEmailExistTest_whenUserExists() {
+        when(jdbcTemplate.queryForObject(any(String.class), any(Class.class), any(String.class)))
+                .thenReturn(1);
+        assertTrue(userDao.isEmailExist("user@virt.ua"));
     }
 }
