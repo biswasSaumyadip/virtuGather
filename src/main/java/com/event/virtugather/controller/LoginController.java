@@ -13,16 +13,11 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
     private final UserService userService;
 
-    private static final String NULL_USER_MSG = "User cannot be null";
     private static final String USER_REG_MSG = "User registered with ID: ";
 
     @PostMapping("/register")
     public String register(@RequestBody UserDTO userDTO) {
         log.info("Attempt to register user");
-        if (userDTO == null) {
-            log.error(NULL_USER_MSG);
-            throw new IllegalArgumentException(NULL_USER_MSG);
-        }
         User user = userDTO.toUser();
         user.securePassword(userDTO.getPassword());
         int userId = userService.createUser(user);
