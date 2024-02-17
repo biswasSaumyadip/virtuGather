@@ -42,6 +42,7 @@ public class LoginControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @DisplayName("Should register user")
     public void testRegister() throws Exception {
         UserDTO userDTO = new UserDTO();
         when(userService.createUser(any(User.class))).thenReturn(1);
@@ -57,6 +58,7 @@ public class LoginControllerTest {
     }
 
     @Test
+    @DisplayName("Should handle null user registration")
     public void testRegisterWithNullUser() throws Exception {
         mockMvc.perform(post("/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,6 +70,7 @@ public class LoginControllerTest {
     }
 
     @Test
+    @DisplayName("Should check if username exists")
     void checkUsernameTest() throws Exception {
         String username = "testusername";
 
