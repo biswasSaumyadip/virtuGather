@@ -180,9 +180,6 @@ public class UserDaoImplementation implements UserDao {
     }
 
     private User buildUserFromResultSet(ResultSet rs) throws SQLException {
-        if (!rs.next()) {
-            return null;
-        }
         return User.builder()
                 .user_id(rs.getLong("user_id"))
                 .username(rs.getString("username"))

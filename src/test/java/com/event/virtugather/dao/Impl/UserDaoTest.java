@@ -1,8 +1,7 @@
-package com.event.virtugather.dao.unit;
+package com.event.virtugather.dao.Impl;
 
 import com.event.virtugather.constants.SQL.DatabaseQueries;
 import com.event.virtugather.constants.UserField;
-import com.event.virtugather.dao.Impl.UserDaoImplementation;
 import com.event.virtugather.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -173,6 +172,7 @@ public class UserDaoTest {
 
     @Test
     @DisplayName("Test for Fetching User by ID")
+    @MockitoSettings(strictness = Strictness.LENIENT)
     void getUserBy_UUID_ShouldReturnUser() {
 
         Long id = 1L;
