@@ -12,4 +12,11 @@ public class DatabaseQueries {
     public final static String GET_USER_DETAILS_QUERY = "SELECT detail_id, user_id, first_name, last_name, " +
             "phone_number, address, created_at, updated_at " +
             "FROM user_details WHERE user_id = ?";
+
+    public static final String UPDATE_USER_DETAILS_QUERY  = "UPDATE user_details " +
+            "SET first_name = ?, last_name = ?, phone_number = ?, address = ? " +
+            "WHERE user_id = ?";
+
+    public static final String SAVE_USER_DETAILS_QUERY = "INSERT INTO user_details " +
+            "(user_id,first_name, last_name, phone_number, address) VALUE (?,?,?,?,?)";
 }

@@ -12,4 +12,18 @@ public interface UserDetailsDao {
      */
     UserDetails getUserDetails(Long id);
 
+    /**
+     * Saves the user details for a given user.
+     *
+     * @param userDetails the UserDetails object containing the user details to save
+     */
+    void saveUserDetails(UserDetails userDetails);
+
+    /**
+     * Updates the user details for a given user.
+     *
+     * @param userDetails the UserDetails object containing the updated user details
+     */
+    void updateUserDetails(UserDetails userDetails);
+
 }
