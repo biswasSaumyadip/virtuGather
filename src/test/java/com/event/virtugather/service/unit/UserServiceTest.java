@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -109,5 +109,35 @@ public class UserServiceTest {
         when(userDao.updateUserField(userId, field, newValue)).thenReturn(0);
 
         assertThrows(IllegalArgumentException.class, () -> userService.updatedUserField(userId, field, newValue));
+    }
+
+    @Test
+    @DisplayName("Test if isEmailExist() returns true for valid email")
+    void isEmailExist_withValidEmail() {
+        String email = "test@gmail.com";
+
+        when(userDao.isEmailExist(email)).thenReturn(true);
+
+        // Testing the method
+        boolean emailExists = userService.isEmailExist(email);
+
+        // Verify mocks and assertions
+        verify(userDao, times(1)).isEmailExist(email);
+        assertTrue(emailExists);
+    }
+
+    @Test
+    @DisplayName("Test if isEmailExist() returns false for invalid email")
+    void isEmailExist_withInvalidEmail() {
+        String email = "invalid";
+
+        when(userDao.isEmailExist(email)).thenReturn(false);
+
+        // Test the method
+        boolean emailExists = userService.isEmailExist(email);
+
+        // Verify mocks and assertions
+        verify(userDao, times(1)).isEmailExist(email);
+        assertFalse(emailExists);
     }
 }

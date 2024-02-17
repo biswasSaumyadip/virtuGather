@@ -34,6 +34,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean isEmailExist(String email) {
+        return userDao.isEmailExist(email);
+    }
+
+    @Override
     public String updatedUserField(Long id, UserField field, String newValue) {
         int status = userDao.updateUserField(id, field, newValue);
         if (status == 0) {

@@ -17,6 +17,14 @@ public interface UserService {
     boolean isUsernameExist(String username);
 
     /**
+     * Checks if a given email already exists.
+     *
+     * @param email the email to check
+     * @return true if the email exists, false otherwise
+     */
+    boolean isEmailExist(String email);
+
+    /**
      * Updates a specific field of a user identified by the given ID.
      *
      * @param id        the ID of the user to update
