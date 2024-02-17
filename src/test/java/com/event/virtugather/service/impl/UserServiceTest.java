@@ -1,9 +1,8 @@
-package com.event.virtugather.service.unit;
+package com.event.virtugather.service.impl;
 
 import com.event.virtugather.constants.UserField;
 import com.event.virtugather.dao.UserDao;
 import com.event.virtugather.model.User;
-import com.event.virtugather.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

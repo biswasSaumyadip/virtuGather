@@ -40,11 +40,12 @@ public class UserDetailsDaoImpl implements UserDetailsDao {
     }
 
     @Override
-    public void saveUserDetails(UserDetails userDetails) {
+    public int saveUserDetails(UserDetails userDetails) throws UserDetailsSaveException {
         log.info("Saving user details: {}", userDetails);
         try {
-            jdbcTemplate.update(DatabaseQueries.SAVE_USER_DETAILS_QUERY, getParams(userDetails));
+            int result = jdbcTemplate.update(DatabaseQueries.SAVE_USER_DETAILS_QUERY, getParams(userDetails));
             log.info("User details saved successfully.");
+            return result;
         } catch (DataAccessException e) {
             log.debug("Data access exception occurred while saving user details: " + userDetails, e);
             throw new UserDetailsSaveException("Data access exception occurred. Unable to save user details.", e);
@@ -52,12 +53,13 @@ public class UserDetailsDaoImpl implements UserDetailsDao {
     }
 
     @Override
-    public void updateUserDetails(UserDetails userDetails) {
+    public int updateUserDetails(UserDetails userDetails) {
         log.info("Updating user details: {}", userDetails);
         try {
             Object[] params = getParams(userDetails);
-            jdbcTemplate.update(DatabaseQueries.UPDATE_USER_DETAILS_QUERY, params);
+            int result = jdbcTemplate.update(DatabaseQueries.UPDATE_USER_DETAILS_QUERY, params);
             log.info("User details updated successfully.");
+            return result;
         } catch (DataAccessException e) {
             log.debug("Data access exception occurred while updating user details: " + userDetails, e);
             throw new UserDetailsSaveException("Data access exception occurred. Unable to save user details.", e);

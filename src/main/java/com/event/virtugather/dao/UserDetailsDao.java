@@ -1,5 +1,6 @@
 package com.event.virtugather.dao;
 
+import com.event.virtugather.exceptions.UserDetailsSaveException;
 import com.event.virtugather.model.UserDetails;
 
 public interface UserDetailsDao {
@@ -17,13 +18,13 @@ public interface UserDetailsDao {
      *
      * @param userDetails the UserDetails object containing the user details to save
      */
-    void saveUserDetails(UserDetails userDetails);
+    int saveUserDetails(UserDetails userDetails) throws UserDetailsSaveException;
 
     /**
      * Updates the user details for a given user.
      *
      * @param userDetails the UserDetails object containing the updated user details
      */
-    void updateUserDetails(UserDetails userDetails);
+    int updateUserDetails(UserDetails userDetails) throws UserDetailsSaveException;
 
 }
