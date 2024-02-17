@@ -1,5 +1,6 @@
 package com.event.virtugather.service.unit;
 
+import com.event.virtugather.constants.UserField;
 import com.event.virtugather.dao.UserDao;
 import com.event.virtugather.model.User;
 import com.event.virtugather.service.impl.UserServiceImpl;
@@ -41,9 +42,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("Test creating user with null throws exception")
     public void testCreateUser_NullUser() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.createUser(null);
-        });
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.createUser(null));
         assertEquals("User cannot be null", exception.getMessage());
     }
 
@@ -53,12 +52,11 @@ public class UserServiceTest {
         User testUser = new User();
         when(userDao.createUser(testUser)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> {
-            userService.createUser(testUser);
-        });
+        assertThrows(RuntimeException.class, () -> userService.createUser(testUser));
     }
 
     @Test
+    @DisplayName("Test if username exists")
     public void testIsUsernameExist() {
         String existingUsername = "existingUser";
 
@@ -73,6 +71,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Test if username does not exist")
     public void testIsUsernameNotExist() {
         String nonExistingUsername = "nonExistingUser";
 
@@ -84,5 +83,31 @@ public class UserServiceTest {
 
         // Assert that the username does not exist.
         Assertions.assertFalse(isExist, "Username should not exist.");
+    }
+
+    @Test
+    @DisplayName("Test updating user field successfully")
+    void shouldUpdateUserField() {
+        Long userId = 1L;
+        UserField field = UserField.USERNAME;
+        String newValue = "newValue";
+
+        when(userDao.updateUserField(userId, field, newValue)).thenReturn(1);
+
+        String result = userService.updatedUserField(userId, field, newValue);
+
+        assertEquals("User field updated successfully", result);
+    }
+
+    @Test
+    @DisplayName("Test updating user field with invalid parameters")
+    void shouldNotUpdateUserFieldWithInvalidParameters() {
+        Long userId = 1L;
+        UserField field = UserField.USERNAME;
+        String newValue = "newValue";
+
+        when(userDao.updateUserField(userId, field, newValue)).thenReturn(0);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.updatedUserField(userId, field, newValue));
     }
 }
