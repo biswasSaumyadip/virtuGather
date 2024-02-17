@@ -1,9 +1,11 @@
 package com.event.virtugather.controller;
 
 import com.event.virtugather.DTO.UserDTO;
+import com.event.virtugather.constants.UserField;
 import com.event.virtugather.model.User;
 import com.event.virtugather.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -78,6 +81,72 @@ public class LoginControllerTest {
 
         // Verify interactions
         verify(userService).isUsernameExist(username);
+    }
+
+    @Test
+    @DisplayName("Should update username")
+    void shouldUpdateUsername() throws Exception {
+        // Arrange
+        Long id = 1L;
+        UserField field = UserField.USERNAME;
+        String newValue = "newUsername";
+
+        // mock behavior
+        when(userService.updatedUserField(id, field, newValue)).thenReturn("Username updated");
+
+        // Act & Assert
+        mockMvc.perform(post("/updateUserField/{id}", id)
+                        .param("field", field.name())
+                        .param("newValue", newValue))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Username updated"));
+
+        // Verify
+        verify(userService).updatedUserField(id, field, newValue);
+    }
+
+    @Test
+    @DisplayName("Should update email")
+    void shouldUpdateEmail() throws Exception {
+        // Arrange
+        Long id = 1L;
+        UserField field = UserField.EMAIL;
+        String newValue = "newEmail@example.com";
+
+        // mock behavior
+        when(userService.updatedUserField(id, field, newValue)).thenReturn("Email updated");
+
+        // Act & Assert
+        mockMvc.perform(post("/updateUserField/{id}", id)
+                        .param("field", field.name())
+                        .param("newValue", newValue))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Email updated"));
+
+        // Verify
+        verify(userService).updatedUserField(id, field, newValue);
+    }
+
+    @Test
+    @DisplayName("Should update password")
+    void shouldUpdatePassword() throws Exception {
+        // Arrange
+        Long id = 1L;
+        UserField field = UserField.PASSWORD;
+        String newValue = "newPassword";
+
+        // mock behavior
+        when(userService.updatedUserField(id, field, newValue)).thenReturn("Password updated");
+
+        // Act & Assert
+        mockMvc.perform(post("/updateUserField/{id}", id)
+                        .param("field", field.name())
+                        .param("newValue", newValue))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password updated"));
+
+        // Verify
+        verify(userService).updatedUserField(id, field, newValue);
     }
 
 }
