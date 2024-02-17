@@ -123,6 +123,17 @@ public class UserDaoImplementation implements UserDao {
     }
 
     @Override
+    public boolean isEmailExist(String email) {
+        try {
+            Integer count = jdbcTemplate.queryForObject(DatabaseQueries.QUERY_CHECK_EMAIL, Integer.class, email);
+            return count != null && count > 0;
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
+
+    }
+
+    @Override
     public int updateUserField(Long id, UserField field, String newValue) {
         String columnName = getColumnName(field);
 

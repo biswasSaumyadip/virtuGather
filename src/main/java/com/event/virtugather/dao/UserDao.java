@@ -60,6 +60,14 @@ public interface UserDao {
     boolean isUsernameExist(String username);
 
     /**
+     * Checks if an email exists in the database.
+     *
+     * @param email The email to check.
+     * @return true if the email exists, false otherwise.
+     */
+    boolean isEmailExist(String email);
+
+    /**
      * Updates a specific field of an user in the database.
      *
      * @param id The ID of the user to update.
