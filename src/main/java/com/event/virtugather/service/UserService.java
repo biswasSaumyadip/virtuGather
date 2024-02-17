@@ -1,8 +1,8 @@
 package com.event.virtugather.service;
 
+import com.event.virtugather.constants.UserField;
 import com.event.virtugather.model.User;
 
-import java.util.Optional;
 
 public interface UserService {
 
@@ -15,5 +15,15 @@ public interface UserService {
      * @return true if the username exists, false otherwise
      */
     boolean isUsernameExist(String username);
+
+    /**
+     * Updates a specific field of a user identified by the given ID.
+     *
+     * @param id        the ID of the user to update
+     * @param field     the field to update
+     * @param newValue  the new value for the field
+     * @return the updated value of the field
+     */
+    String updatedUserField(Long id, UserField field, String newValue);
 
 }

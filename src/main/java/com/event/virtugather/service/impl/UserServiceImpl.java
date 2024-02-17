@@ -1,5 +1,6 @@
 package com.event.virtugather.service.impl;
 
+import com.event.virtugather.constants.UserField;
 import com.event.virtugather.dao.UserDao;
 import com.event.virtugather.model.User;
 import com.event.virtugather.service.UserService;
@@ -30,5 +31,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isUsernameExist(String username) {
         return userDao.isUsernameExist(username);
+    }
+
+    @Override
+    public String updatedUserField(Long id, UserField field, String newValue) {
+        int status = userDao.updateUserField(id, field, newValue);
+        if (status == 0) {
+            throw new IllegalArgumentException("Invalid user ID or field");
+        } else {
+            return "User field updated successfully";
+        }
     }
 }
