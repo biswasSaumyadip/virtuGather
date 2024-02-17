@@ -1,6 +1,7 @@
 package com.event.virtugather.controller;
 
 import com.event.virtugather.DTO.UserDTO;
+import com.event.virtugather.constants.UserField;
 import com.event.virtugather.model.User;
 import com.event.virtugather.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,11 @@ public class LoginController {
     public boolean checkUsername(@PathVariable String username) {
         log.info("Checking if username exists: {}", username);
         return userService.isUsernameExist(username);
+    }
+
+    @PostMapping("/updateUserField/{id}")
+    public String updateUserField(@PathVariable Long id, @RequestParam UserField field, @RequestParam String newValue) {
+        log.info("Updating user field: id={}, field={}, newValue={}", id, field, newValue);
+        return userService.updatedUserField(id, field, newValue);
     }
 }
