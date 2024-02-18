@@ -23,4 +23,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public int updateUserDetails(UserDetails userDetails) {
         return userDetailsDao.updateUserDetails(userDetails);
     }
+
+    @Override
+    public UserDetails getUserDetails(long id) {
+        return userDetailsDao.getUserDetails(id);
+    }
 }

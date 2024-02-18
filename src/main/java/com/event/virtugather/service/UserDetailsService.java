@@ -20,4 +20,13 @@ public interface UserDetailsService {
      *         1 if the update was successful
      */
     int updateUserDetails(UserDetails userDetails);
+
+
+    /**
+     * Retrieves the user details for a given user ID.
+     *
+     * @param id the ID of the user
+     * @return the UserDetails object containing the user details
+     */
+    UserDetails getUserDetails(long id);
 }

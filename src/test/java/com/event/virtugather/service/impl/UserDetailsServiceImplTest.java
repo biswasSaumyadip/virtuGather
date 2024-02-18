@@ -1,6 +1,7 @@
 package com.event.virtugather.service.impl;
 
 import com.event.virtugather.dao.UserDetailsDao;
+import com.event.virtugather.exceptions.NotFoundException;
 import com.event.virtugather.exceptions.UserDetailsSaveException;
 import com.event.virtugather.model.UserDetails;
 import org.junit.jupiter.api.DisplayName;
@@ -10,8 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +74,32 @@ public class UserDetailsServiceImplTest {
         assertThrows(UserDetailsSaveException.class, () -> userDetailsServiceImpl.updateUserDetails(null));
     }
 
+    @Test
+    void getUserDetails_ShouldReturnUserDetails() {
+        long id = 199L;
 
+        UserDetails userDetails = UserDetails.builder()
+                .userId(199L)
+                .detailId(198L)
+                .firstName("blitz")
+                .lastName("lilith")
+                .phoneNumber("9905892884")
+                .build();
+
+        when(userDao.getUserDetails(id)).thenReturn(userDetails);
+
+        UserDetails result = userDetailsServiceImpl.getUserDetails(id);
+
+        assertEquals(userDetails, result);
+        verify(userDao).getUserDetails(id);
+    }
+
+
+    @Test
+    void getUserDetails_ShouldHandleNotFoundException() {
+        when(userDao.getUserDetails(199L)).thenThrow(NotFoundException.class);
+        assertThrows(NotFoundException.class, () ->userDetailsServiceImpl.getUserDetails(199L));
+    }
 
 }
+
