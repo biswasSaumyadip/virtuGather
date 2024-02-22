@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -33,6 +34,9 @@ public class UserDaoImplementation implements UserDao {
     private static final String ERROR_WHILE_CREATING_USER = "Error occurred while creating user";
     private static final String ERROR_WHILE_UPDATING_USER = "Error occurred while updating user";
     private static final String ERROR_WHILE_DELETING_USER = "Error occurred while deleting user";
+
+    private static final String ERROR_DUPLICATE_USER = "User already exist";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -43,6 +47,9 @@ public class UserDaoImplementation implements UserDao {
             jdbcTemplate.update(setParametersForCreateUser(user), keyHolder);
             LOGGER.info(USER_CREATION_SUCCESSFUL);
             return Optional.ofNullable(keyHolder.getKey()).orElseThrow(RuntimeException::new).intValue();
+        } catch (DuplicateKeyException exception){
+            LOGGER.error(String.format("%s, due to - %s", ERROR_DUPLICATE_USER, exception.getMessage()));
+            throw new DuplicateKeyException(ERROR_DUPLICATE_USER + " with username "+ user.getUsername(), exception);
         } catch (DataAccessException exception) {
             LOGGER.error(String.format("%s, due to - %s", ERROR_WHILE_CREATING_USER, exception.getMessage()));
             throw new RuntimeException(ERROR_WHILE_CREATING_USER, exception);
