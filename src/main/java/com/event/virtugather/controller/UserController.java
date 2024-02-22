@@ -4,9 +4,7 @@ import com.event.virtugather.model.UserDetails;
 import com.event.virtugather.service.UserDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -19,5 +17,15 @@ public class UserController {
         return userDetailsService.getUserDetails(id);
     }
 
+    @PostMapping("/user")
+    public int createUserDetails(@RequestBody UserDetails userDetails) {
+        return userDetailsService.createUserDetails(userDetails);
+    }
+
+    @PostMapping("/user/{id}")
+    public int updateUserDetails(@PathVariable long id, @RequestBody UserDetails userDetails) {
+        userDetails.setUserId(id);
+        return userDetailsService.updateUserDetails(userDetails);
+    }
 
 }

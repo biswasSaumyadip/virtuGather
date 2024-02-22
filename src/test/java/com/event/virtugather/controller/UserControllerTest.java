@@ -2,7 +2,6 @@ package com.event.virtugather.controller;
 
 import com.event.virtugather.model.UserDetails;
 import com.event.virtugather.service.UserDetailsService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,11 +10,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,6 +56,44 @@ public class UserControllerTest {
                 .andExpect(content().string(expectedObject));
 
         verify(userDetailsService).getUserDetails(userId);
+    }
+
+    @Test
+    @DisplayName("Test: Create new user details")
+    void testCreateUserDetails() throws Exception {
+        // Given
+        UserDetails userDetails = UserDetails.builder().build();
+
+        // Mock behavior
+        when(userDetailsService.createUserDetails(any(UserDetails.class))).thenReturn(1);
+
+        // Convert Object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userDetails);
+
+        // Perform post request and verify behavior
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk());
+
+        verify(userDetailsService, times(1)).createUserDetails(any(UserDetails.class));
+    }
+
+    @Test
+    @DisplayName("Test: Update user details with valid user details")
+    void updateUserDetails_ValidUserDetails_UserDetailsUpdated() throws Exception {
+
+        UserDetails userDetails = new UserDetails();
+        userDetails.setUserId(1L);
+
+        when(userDetailsService.updateUserDetails(userDetails)).thenReturn(1);
+
+        mockMvc.perform(post("/user/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDetails)))
+                .andExpect(status().isOk());
     }
 
 
