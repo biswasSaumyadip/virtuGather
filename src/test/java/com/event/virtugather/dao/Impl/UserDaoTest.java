@@ -126,7 +126,7 @@ public class UserDaoTest {
                 "Expected a RuntimeException to be thrown");
 
         // Then
-        assertEquals("Error occurred while creating user", exception.getMessage());
+        assertEquals("User already exist with username "+user.getUsername(), exception.getMessage());
         verify(jdbcTemplate).update(any(PreparedStatementCreator.class), any(KeyHolder.class));
     }
 

@@ -17,6 +17,7 @@ public class UserDetails {
     private Long userId;
     private String firstName;
     private String lastName;
+    private String imageUrl;
     private String phoneNumber;
     private String address;
     private Timestamp createdAt;
