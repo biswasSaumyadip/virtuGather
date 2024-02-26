@@ -2,6 +2,8 @@ package com.event.virtugather.dao.Impl;
 
 import com.event.virtugather.constants.SQL.DatabaseQueries;
 import com.event.virtugather.dao.UserDetailsDao;
+import com.event.virtugather.dao.rowMappers.UserDetailsRowMapper;
+import com.event.virtugather.exceptions.InvalidArgumentException;
 import com.event.virtugather.exceptions.NotFoundException;
 import com.event.virtugather.exceptions.UserDetailsSaveException;
 import com.event.virtugather.model.UserDetails;
@@ -63,6 +65,34 @@ public class UserDetailsDaoImpl implements UserDetailsDao {
         } catch (DataAccessException e) {
             log.debug("Data access exception occurred while updating user details: " + userDetails, e);
             throw new UserDetailsSaveException("Data access exception occurred. Unable to save user details.", e);
+        }
+    }
+
+    @Override
+    public UserDetails findByUsername(String username) {
+        try {
+            UserDetails result = jdbcTemplate.queryForObject(DatabaseQueries.GET_USER_BY_USERNAME_QUERY,  new Object[] { username },   new UserDetailsRowMapper());
+            log.info("User details found for username: {}. Details: {}", username, result);
+            if(result == null) throw new NotFoundException("User not found with username "+ username);
+            return result;
+        } catch (DataAccessException e) {
+            log.error("Data access exception occurred while finding user details for username: " + username, e);
+            throw new NotFoundException("Data access exception occurred. Unable to find user details for username: " + username);
+        }
+    }
+
+    @Override
+    public int saveProfileImage(String username, String URL) {
+        log.info("Saving profile image for username: {}", username);
+        if(username == null) throw new NotFoundException("Null username not allowed");
+        if(URL == null) throw new InvalidArgumentException("Null URL not allowed");
+        try {
+            int result = jdbcTemplate.update(DatabaseQueries.UPDATE_USER_PROFILE_PICTURE, username, URL);
+            log.info("Profile image saved successfully.");
+            return result;
+        } catch (DataAccessException e) {
+            log.debug("Data access exception occurred while saving profile image for username: " + username, e);
+            throw new UserDetailsSaveException("Data access exception occurred. Unable to save profile image.", e);
         }
     }
 

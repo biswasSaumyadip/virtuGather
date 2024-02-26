@@ -27,4 +27,14 @@ public interface UserDetailsDao {
      */
     int updateUserDetails(UserDetails userDetails) throws UserDetailsSaveException;
 
+    /**
+     * Retrieves the user details for the given username.
+     *
+     * @param username the username of the user to retrieve the details for
+     * @return the UserDetails object containing the user details
+     */
+    UserDetails findByUsername(String username);
+
+    int saveProfileImage(String username, String URL);
+
 }
