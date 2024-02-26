@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +26,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,14 +63,33 @@ public class LoginControllerTest {
     }
 
     @Test
+    @DisplayName("Given a DuplicateKeyException, when register is called, then return HttpStatus.CONFLICT")
+    public void givenDuplicateKeyException_whenRegister_thenReturnsHttpStatusConflict() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("testUser");
+        userDTO.setPassword("testPassword");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userDTOJson = objectMapper.writeValueAsString(userDTO);
+
+        when(userService.createUser(any(User.class))).thenThrow(DuplicateKeyException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userDTOJson))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
     @DisplayName("Should handle null user registration")
     public void testRegisterWithNullUser() throws Exception {
-        mockMvc.perform(post("/register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
-                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof HttpMessageNotReadableException))
-                .andExpect(result -> assertEquals("Required request body is missing: public java.lang.String com.event.virtugather.controller.LoginController.register(com.event.virtugather.DTO.UserDTO)",
+                .andExpect(result -> assertEquals("Required request body is missing: public java.lang.String com.event.virtugather.controller.LoginController.register(com.event.virtugather.DTO.UserDTO) throws org.springframework.dao.DuplicateKeyException",
                         result.getResolvedException().getMessage()));
     }
 

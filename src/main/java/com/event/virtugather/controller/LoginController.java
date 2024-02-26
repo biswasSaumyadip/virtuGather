@@ -6,6 +6,7 @@ import com.event.virtugather.model.User;
 import com.event.virtugather.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +18,7 @@ public class LoginController {
     private static final String USER_REG_MSG = "User registered with ID: ";
 
     @PostMapping("/register")
-    public String register(@RequestBody UserDTO userDTO) {
+    public String register(@RequestBody UserDTO userDTO) throws DuplicateKeyException {
         log.info("Attempt to register user");
         User user = userDTO.toUser();
         user.securePassword(userDTO.getPassword());
